@@ -322,6 +322,26 @@ GDALContourGenerate( GDALRasterBandH hBand,
                             void *hLayer, int iIDField, int iElevField,
                             GDALProgressFunc pfnProgress, void *pProgressArg );
 
+/* -------------------------------------------------------------------- */
+/*      Viewshed Generation                                             */
+/* -------------------------------------------------------------------- */
+
+/** Viewshed Modes */
+typedef enum {
+    GVM_Diagonal = 1,
+    GVM_Edge = 2,
+    GVM_Max = 3,
+    GVM_Min = 4
+} GDALViewshedMode;
+
+CPLErr CPL_DLL
+GDALViewshedGenerate(GDALRasterBandH hBand, const char* pszTargetRasterName,
+                        double dfObserverX, double dfObserverY, double dfObserverHeight,
+                        double dfTargetHeight, double dfVisibleVal, double dfInvisibleVal,
+                        double dfOutOfRangeVal, double dfNoDataVal, double dfCurvCoeff,
+                        GDALViewshedMode eMode, double dfMaxDistance,
+                        GDALProgressFunc pfnProgress, void *pProgressArg);
+
 /************************************************************************/
 /*      Rasterizer API - geometries burned into GDAL raster.            */
 /************************************************************************/
