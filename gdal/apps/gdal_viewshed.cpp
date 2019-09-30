@@ -44,12 +44,11 @@ static void Usage(const char* pszErrorMsg = nullptr)
 
 {
     printf(
-        "Usage: gdal_viewshed [-b <band>] [-a <attribute_name>] [-3d] [-inodata]\n"
-        "                    [-snodata n] [-f <formatname>] [-tr <target_raster_filename>]\n"
-        "                    [-oz <observer_height>] [-tz <target_height>] [-md <max_distance>]\n"
+        "Usage: gdal_viewshed [-b <band>] [-oz <observer_height>] [-tz <target_height>]\n"
         "                    [-ox <observer_x> -oy <observer_y>]\n"
-        "                    [[-dsco NAME=VALUE] ...] [[-lco NAME=VALUE] ...]\n"
-        "                    [-nln <outlayername>] [-q]\n"
+        "                    [-md <max_distance>] [-vv <visible_value>]\n"
+        "                    [-iv <invisible_value>] [-ov <out_of_range_value>]"
+        "                    [-nv <nodata_value>] [-cc <curve_coefficient>] [-q]\n"
         "                    <src_filename> <dst_filename>\n" );
 
     if( pszErrorMsg != nullptr )
@@ -67,7 +66,7 @@ static void Usage(const char* pszErrorMsg = nullptr)
         Usage(CPLSPrintf("%s option requires %d argument(s)", \
                          argv[i], nExtraArg)); } while( false )
 
-MAIN_START(argc, argv)
+int main(int argc, char ** argv)
 
 {
     int nBandIn = 1;
@@ -80,7 +79,7 @@ MAIN_START(argc, argv)
     double dfInvisibleVal = 0.0;
     double dfOutOfRangeVal = -1.0;
     double dfNoDataVal = 0.0;
-    double dfCurvCoeff = 0.0;
+    double dfCurvCoeff = 0.85714;
     const char *pszSrcFilename = nullptr;
     const char *pszDstFilename = nullptr;
     bool bQuiet = false;
@@ -248,4 +247,4 @@ MAIN_START(argc, argv)
 
     return (eErr == CE_None) ? 0 : 1;
 }
-MAIN_END
+
