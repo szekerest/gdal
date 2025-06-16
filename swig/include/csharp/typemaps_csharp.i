@@ -611,22 +611,39 @@ OPTIONAL_POD(int, int);
  * SpatialReference.FindMatches                                               *
  *****************************************************************************/
 %apply (int *hasval) {int *nvalues};
-%apply (int **array_argout) {int** confidence_values};
 %typemap(imtype, out="IntPtr") OSRSpatialReferenceShadow** FindMatches "SpatialReference[]"
 %typemap(cstype) OSRSpatialReferenceShadow** FindMatches %{SpatialReference[]%}
+%typemap(imtype) int** confidence_values "out IntPtr"
+%typemap(cstype) int** confidence_values %{out int[]%}
+%typemap(csin) int** confidence_values "out confValPtr"
+%typemap(in) (int** confidence_values)
+{
+  /* %typemap(in) (int** confidence_values) */
+  $1 = ($1_ltype)$input;
+}
 %typemap(csout, excode=SWIGEXCODE) OSRSpatialReferenceShadow** FindMatches {
         /* %typemap(csout) char** FindMatches */
+        IntPtr confValPtr;
         IntPtr cPtr = $imcall;
         IntPtr objPtr;
         SpatialReference[] ret = new SpatialReference[nvalues];
+        confidence_values = (confValPtr == IntPtr.Zero) ? null : new int[nvalues];
         if (nvalues > 0) {
 	        for(int cx = 0; cx < nvalues; cx++) {
                 objPtr = System.Runtime.InteropServices.Marshal.ReadIntPtr(cPtr, cx * System.Runtime.InteropServices.Marshal.SizeOf(typeof(IntPtr)));
                 ret[cx]= (objPtr == IntPtr.Zero) ? null : new SpatialReference(objPtr, true, null);
+                if (confValPtr != IntPtr.Zero) {
+                    confidence_values[cx] = System.Runtime.InteropServices.Marshal.ReadInt32(confValPtr, cx * System.Runtime.InteropServices.Marshal.SizeOf(typeof(Int32)));
+                }
+                
             }
         }
-        if (cPtr != IntPtr.Zero)
+        if (cPtr != IntPtr.Zero) {
             $modulePINVOKE.CPLMemDestroy(cPtr);
+        }
+        if (confValPtr != IntPtr.Zero) {
+            $modulePINVOKE.CPLMemDestroy(confValPtr);
+        }
         $excode
         return ret;
 }
