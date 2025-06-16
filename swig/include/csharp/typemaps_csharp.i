@@ -556,6 +556,14 @@ OPTIONAL_POD(int, int);
     }
 %}
 
+%csmethodmodifiers CPLMemDestroy "internal";
+%inline %{
+    void CPLMemDestroy(void *buffer_ptr) {
+       if (buffer_ptr)
+           CPLFree(buffer_ptr);
+    }
+%}
+
 /******************************************************************************
  * ErrorHandler callback support                                              *
  *****************************************************************************/
@@ -598,3 +606,27 @@ OPTIONAL_POD(int, int);
  * GDALGetLayerByName typemaps                                                *
  *****************************************************************************/
 %apply ( const char *utf8_path ) { const char* layer_name };
+
+/******************************************************************************
+ * SpatialReference.FindMatches                                               *
+ *****************************************************************************/
+%apply (int *hasval) {int *nvalues};
+%apply (int **array_argout) {int** confidence_values};
+%typemap(imtype, out="IntPtr") OSRSpatialReferenceShadow** FindMatches "SpatialReference[]"
+%typemap(cstype) OSRSpatialReferenceShadow** FindMatches %{SpatialReference[]%}
+%typemap(csout, excode=SWIGEXCODE) OSRSpatialReferenceShadow** FindMatches {
+        /* %typemap(csout) char** FindMatches */
+        IntPtr cPtr = $imcall;
+        IntPtr objPtr;
+        SpatialReference[] ret = new SpatialReference[nvalues];
+        if (nvalues > 0) {
+	        for(int cx = 0; cx < nvalues; cx++) {
+                objPtr = System.Runtime.InteropServices.Marshal.ReadIntPtr(cPtr, cx * System.Runtime.InteropServices.Marshal.SizeOf(typeof(IntPtr)));
+                ret[cx]= (objPtr == IntPtr.Zero) ? null : new SpatialReference(objPtr, true, null);
+            }
+        }
+        if (cPtr != IntPtr.Zero)
+            $modulePINVOKE.CPLMemDestroy(cPtr);
+        $excode
+        return ret;
+}
